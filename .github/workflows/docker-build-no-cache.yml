@@ -55,7 +55,7 @@ jobs:
           NEXT_PUBLIC_NAVER_MAP_CLIENT_ID=${{ secrets.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID }}
         tags: |
           ${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}
-          ${{ github.ref == 'refs/heads/main' && format('{0}:latest', env.IMAGE_NAME) || '' }}
+          ${{ env.IMAGE_NAME }}:latest
         
     - name: Build Docker image (Pull Request)
       if: github.event_name == 'pull_request'
