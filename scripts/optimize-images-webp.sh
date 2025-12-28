@@ -67,7 +67,7 @@ optimize_image_webp() {
     # 첫 번째 시도: 품질 90% (원본 해상도 유지)
     $CONVERT_PATH "$original_file" \
         -auto-orient \
-        -quality 100 \
+        -quality 90 \
         -strip \
         "$output_file.tmp"
     
@@ -95,7 +95,7 @@ optimize_image_webp() {
         echo "  🔧 2차 압축 시도 (품질 80%, 해상도 유지)"
         $CONVERT_PATH "$original_file" \
             -auto-orient \
-            -quality 90 \
+            -quality 80 \
             -strip \
             "$output_file.tmp"
         if [ -s "$output_file.tmp" ]; then
@@ -109,7 +109,7 @@ optimize_image_webp() {
         echo "  🔧 3차 압축 시도 (품질 70%, 해상도 유지)"
         $CONVERT_PATH "$original_file" \
             -auto-orient \
-            -quality 80 \
+            -quality 70 \
             -strip \
             "$output_file.tmp"
         if [ -s "$output_file.tmp" ]; then
@@ -213,7 +213,7 @@ HERO_WEBP="$PROJECT_ROOT/public/images/ha0h-1fsi-bqt3.webp"
 if [ -f "$HERO_JPG" ]; then
     $CONVERT_PATH "$HERO_JPG" \
         -auto-orient \
-        -quality 95 \
+        -quality 80 \
         -strip \
         "$HERO_WEBP.tmp"
 
