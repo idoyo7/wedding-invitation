@@ -239,13 +239,13 @@ jobs:
         # 변경사항 스테이징 및 커밋
         git add wedding-invitation/manifests/deployment.yaml
         
-        # 커밋 메시지에 더 많은 정보 포함
+        # 커밋 메시지 작성 (안전한 멀티라인)
         git commit -m "🚀 Update wedding-invitation image tag to ${{ env.SHORT_SHA }}
 
-        - Updated image: montkim9/wedding-invitation:${{ env.SHORT_SHA }}
-        - Triggered by: ${{ github.event.head_commit.message }}
-        - Commit SHA: ${{ github.sha }}
-        - Author: ${{ github.actor }}"
+Updated image: montkim9/wedding-invitation:${{ env.SHORT_SHA }}
+Triggered by: ${{ github.event.head_commit.message }}
+Commit SHA: ${{ github.sha }}
+Author: ${{ github.actor }}"
         
         # 푸시
         git push
