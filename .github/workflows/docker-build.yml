@@ -71,23 +71,126 @@ jobs:
         echo "**Repository:** \`${{ env.IMAGE_NAME }}\`" >> $GITHUB_STEP_SUMMARY
         echo "**SHA:** \`${{ env.SHORT_SHA }}\`" >> $GITHUB_STEP_SUMMARY
 
-  # 배포 준비 완료 알림
-  deploy-ready:
+  # montstrap 매니페스트 업데이트
+  update-manifests:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: build-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Extract short SHA
+      id: vars
+      run: echo "SHORT_SHA=${GITHUB_SHA::6}" >> $GITHUB_ENV
+
+    - name: Checkout montstrap repository
+      uses: actions/checkout@v4
+      with:
+        repository: idoyo7/montstrap
+        token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+        path: montstrap
+
+    - name: Update deployment manifest
+      run: |
+        cd montstrap
+        
+        # 파일 존재 확인
+        if [ ! -f "montstrap/wedding-invitation/manifests/deployment.yaml" ]; then
+          echo "❌ Error: deployment.yaml not found at expected path"
+          echo "Looking for files in montstrap/wedding-invitation/manifests/:"
+          ls -la montstrap/wedding-invitation/manifests/ || echo "Directory not found"
+          exit 1
+        fi
+        
+        # 현재 이미지 태그 확인
+        echo "Current deployment.yaml content:"
+        grep -n "image:" montstrap/wedding-invitation/manifests/deployment.yaml || echo "No image line found"
+        
+        # 이미지 태그 업데이트
+        sed -i 's|image: montkim9/wedding-invitation:.*|image: montkim9/wedding-invitation:${{ env.SHORT_SHA }}|' montstrap/wedding-invitation/manifests/deployment.yaml
+        
+        # 변경사항 확인
+        echo ""
+        echo "✅ Updated deployment.yaml:"
+        grep -n "image:" montstrap/wedding-invitation/manifests/deployment.yaml
+
+    - name: Commit and push changes to montstrap
+      run: |
+        cd montstrap
+        
+        # Git 설정
+        git config user.name "${{ github.actor }}"
+        git config user.email "${{ github.actor }}@users.noreply.github.com"
+        
+        # 변경사항 확인
+        if git diff --quiet montstrap/wedding-invitation/manifests/deployment.yaml; then
+          echo "⚠️ No changes detected in deployment.yaml"
+          echo "This might indicate the tag was already up to date or the sed command failed"
+          exit 1
+        fi
+        
+        # 변경사항 스테이징 및 커밋
+        git add montstrap/wedding-invitation/manifests/deployment.yaml
+        
+        # 커밋 메시지에 더 많은 정보 포함
+        git commit -m "🚀 Update wedding-invitation image tag to ${{ env.SHORT_SHA }}
+
+        - Updated image: montkim9/wedding-invitation:${{ env.SHORT_SHA }}
+        - Triggered by: ${{ github.event.head_commit.message }}
+        - Commit SHA: ${{ github.sha }}
+        - Author: ${{ github.actor }}"
+        
+        # 푸시
+        git push
+
+    - name: Update Summary
+      run: |
+        echo "### 🎉 Wedding Invitation - Deployment Updated" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "✅ **Docker image built and pushed successfully**" >> $GITHUB_STEP_SUMMARY
+        echo "✅ **Montstrap deployment manifest updated**" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**New Image Tag:** \`montkim9/wedding-invitation:${{ env.SHORT_SHA }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Updated File:** \`montstrap/wedding-invitation/manifests/deployment.yaml\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Repository:** [idoyo7/montstrap](https://github.com/idoyo7/montstrap)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Commit SHA:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "🔗 **Links:**" >> $GITHUB_STEP_SUMMARY
+        echo "- [Docker Hub Image](https://hub.docker.com/r/montkim9/wedding-invitation)" >> $GITHUB_STEP_SUMMARY
+        echo "- [Montstrap Repository](https://github.com/idoyo7/montstrap)" >> $GITHUB_STEP_SUMMARY
+
+    # 실패 시 알림
+    - name: Notify on failure
+      if: failure()
+      run: |
+        echo "### ❌ Wedding Invitation - Deployment Update Failed" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "The Docker image was built successfully, but updating the montstrap manifest failed." >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Manual Action Required:**" >> $GITHUB_STEP_SUMMARY
+        echo "Please manually update the image tag in:" >> $GITHUB_STEP_SUMMARY
+        echo "\`montstrap/wedding-invitation/manifests/deployment.yaml\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**New tag to use:** \`montkim9/wedding-invitation:${{ env.SHORT_SHA }}\`" >> $GITHUB_STEP_SUMMARY
+
+  # 배포 준비 완료 알림 (기존 유지)
+  deploy-ready:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [build-and-push, update-manifests]
     runs-on: ubuntu-latest
     
     steps:
     - name: Deploy notification
       run: |
-        echo "### 🎉 Wedding Invitation - Deployment Ready" >> $GITHUB_STEP_SUMMARY
+        echo "### 🎊 Wedding Invitation - Ready for Deployment" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "The Docker image has been built and pushed to the registry." >> $GITHUB_STEP_SUMMARY
+        echo "All steps completed successfully!" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**Pull and run the image:**" >> $GITHUB_STEP_SUMMARY
-        echo '```bash' >> $GITHUB_STEP_SUMMARY
-        echo "docker pull ${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
-        echo "docker run -d -p 3000:3000 --name wedding-invitation ${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
-        echo '```' >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**Access the application:** http://localhost:3000" >> $GITHUB_STEP_SUMMARY
+        echo "**Next Steps:**" >> $GITHUB_STEP_SUMMARY
+        echo "1. Check the updated deployment manifest in montstrap repository" >> $GITHUB_STEP_SUMMARY
+        echo "2. ArgoCD or your deployment tool should automatically detect the changes" >> $GITHUB_STEP_SUMMARY
+        echo "3. Monitor the deployment status in your cluster" >> $GITHUB_STEP_SUMMARY
