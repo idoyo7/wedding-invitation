@@ -39,9 +39,24 @@ jobs:
       - name: Extract short SHA
         id: vars
         run: |
-          SHORT_SHA="${GITHUB_SHA::6}"
+          set -euo pipefail
+
+          SHORT_SHA="$(printf "%s" "${GITHUB_SHA}" | cut -c1-6)"
+          if [ -z "${SHORT_SHA}" ]; then
+            echo "❌ SHORT_SHA is empty (GITHUB_SHA='${GITHUB_SHA:-}')" >&2
+            exit 1
+          fi
+
+          IMAGE_TAG="${{ env.IMAGE_NAME }}:${SHORT_SHA}"
+          if [ -z "${IMAGE_TAG}" ]; then
+            echo "❌ IMAGE_TAG is empty" >&2
+            exit 1
+          fi
+
           echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
-          echo "image_tag=${{ env.IMAGE_NAME }}:${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "✅ Computed SHORT_SHA=${SHORT_SHA}"
+          echo "✅ Computed IMAGE_TAG=${IMAGE_TAG}"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -67,7 +82,7 @@ jobs:
           build-args: |
             NEXT_PUBLIC_NAVER_MAP_CLIENT_ID=${{ secrets.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID }}
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.short_sha }}
+            ${{ steps.vars.outputs.image_tag }}
             ${{ env.IMAGE_NAME }}:latest
 
       # PR은 push 없이 build만
@@ -119,25 +134,44 @@ jobs:
       IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
 
     steps:
-    - name: Checkout montstrap repository
-      uses: actions/checkout@v4
-      with:
-        repository: ${{ env.MONTSTRAP_REPO }}
-        token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
-        path: montstrap
+      - name: Validate computed image tag (fail fast)
+        run: |
+          set -euo pipefail
+          echo "SHORT_SHA='${SHORT_SHA}'"
+          echo "IMAGE_TAG='${IMAGE_TAG}'"
 
-    - name: Verify montstrap checkout
-      run: |
-        echo "--- Verifying montstrap repository checkout ---"
-        echo "Repository: ${{ env.MONTSTRAP_REPO }}"
-        echo "SHORT_SHA: ${SHORT_SHA}"
-        echo "IMAGE_TAG: ${IMAGE_TAG}"
-        echo ""
-        ls -la montstrap/
+          if [ -z "${IMAGE_TAG}" ]; then
+            echo "❌ IMAGE_TAG is empty. Refusing to modify manifest." >&2
+            exit 1
+          fi
 
-    - name: Ensure manifest exists
-      id: ensure
-      run: |
+          case "${IMAGE_TAG}" in
+            "${{ env.IMAGE_NAME }}:"*) ;;
+            *)
+              echo "❌ IMAGE_TAG does not match expected prefix '${{ env.IMAGE_NAME }}:'" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Checkout montstrap repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.MONTSTRAP_REPO }}
+          token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+          path: montstrap
+
+      - name: Verify montstrap checkout
+        run: |
+          echo "--- Verifying montstrap repository checkout ---"
+          echo "Repository: ${{ env.MONTSTRAP_REPO }}"
+          echo "SHORT_SHA: ${SHORT_SHA}"
+          echo "IMAGE_TAG: ${IMAGE_TAG}"
+          echo ""
+          ls -la montstrap/
+
+      - name: Ensure manifest exists
+        id: ensure
+        run: |
           set -euo pipefail
           cd montstrap
 
@@ -177,9 +211,9 @@ jobs:
           echo "--- Current image lines ---"
           grep -n "image:" "${MANIFEST_FILE}" || true
 
-    - name: Update image tag in manifest
-      id: update
-      run: |
+      - name: Update image tag in manifest
+        id: update
+        run: |
           set -euo pipefail
           cd montstrap
 
@@ -188,10 +222,15 @@ jobs:
           echo "--- Before ---"
           grep -n "image:" "${MANIFEST_FILE}" || true
 
+          if [ -z "${IMAGE_TAG}" ]; then
+            echo "❌ IMAGE_TAG is empty. Refusing to run sed replacement." >&2
+            exit 1
+          fi
+
           # 공백/들여쓰기 포함해 image 라인을 안전하게 교체
           # 1) image: <IMAGE_NAME>:<anything> 형태가 있으면 교체
           if grep -Eq "^[[:space:]]*image:[[:space:]]*${{ env.IMAGE_NAME }}:" "${MANIFEST_FILE}"; then
-            sed -i -E "s|(^[[:space:]]*image:[[:space:]]*)${{ env.IMAGE_NAME }}:.*|\1${IMAGE_TAG}|g" "${MANIFEST_FILE}"
+            sed -i -E "s|(^[[:space:]]*image:[[:space:]]*)${{ env.IMAGE_NAME }}:.*|\\1${IMAGE_TAG}|g" "${MANIFEST_FILE}"
           else
             # 2) image: 라인이 아예 없거나 다른 이미지면, 첫 번째 컨테이너 블록 아래에 넣고 싶다면 로직 추가 가능
             #    여기서는 "image:" 라인이 있으면 그걸 교체(이미지명이 다르면 바꾸지 않음)하고,
@@ -215,9 +254,9 @@ jobs:
             echo "Changes detected."
           fi
 
-    - name: Commit and push changes to montstrap
-      if: steps.update.outputs.changes_made == 'true'
-      run: |
+      - name: Commit and push changes to montstrap
+        if: steps.update.outputs.changes_made == 'true'
+        run: |
           set -euo pipefail
           cd montstrap
 
@@ -233,9 +272,9 @@ jobs:
           echo "Pushing to branch: ${BRANCH}"
           git push origin "${BRANCH}"
 
-    - name: Update Summary
-      if: always()
-      run: |
+      - name: Update Summary
+        if: always()
+        run: |
           echo "### 🚀 Deployment Manifest Update Status" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Repo:** \`${{ env.MONTSTRAP_REPO }}\`" >> $GITHUB_STEP_SUMMARY
@@ -253,8 +292,8 @@ jobs:
     needs: [build-and-push, update-manifests]
     runs-on: ubuntu-latest
     steps:
-    - name: Deploy notification
-      run: |
+      - name: Deploy notification
+        run: |
           SHORT_SHA="${{ needs.build-and-push.outputs.short_sha }}"
           IMAGE_TAG="${{ needs.build-and-push.outputs.image_tag }}"
 
@@ -271,8 +310,8 @@ jobs:
     needs: [build-and-push, update-manifests]
     runs-on: ubuntu-latest
     steps:
-    - name: Send Failure Notification
-      run: |
+      - name: Send Failure Notification
+        run: |
           echo "### ❌ CI/CD Pipeline Failed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY

@@ -8,10 +8,10 @@ WORKDIR /app
 
 COPY package.json package-lock.json* ./
 
-# 의존성 설치
+# 의존성 설치 (프로덕션 + 개발 의존성)
 RUN \
   if [ -f package-lock.json ]; then \
-    npm ci --only=production; \
+    npm ci; \
   else \
     echo "Lockfile not found." && exit 1; \
   fi
