@@ -43,18 +43,17 @@ export const weddingConfig = {
     minute: 0,
     displayDate: "2026.02.28 FRI PM 04:00",
   },
-
   // 장소 정보
   venue: {
-    name: "밀할학교 도산홀",
-    address: "서울 강남구 일원동 713\n신관 2층 도산홀",
+    name: "밀알학교 도산홀",
+    address: "서울 강남구 일원로 90\n(일원동 713) 신관 2층 도산홀", 
     tel: "02-1234-5678",
-    naverMapId: "밀할학교 도산홀", // 네이버 지도 검색용 장소명
+    naverMapId: "밀알학교", // 네이버 지도 검색용 장소명
     coordinates: {
-      latitude: 37.4874,
-      longitude: 127.0822,
+      latitude: 37.4860906,  // 밀알학교 실제 좌표
+      longitude: 127.0823399,
     },
-    placeId: "123456789", // 네이버 지도 장소 ID
+    placeId: "11617296",
     mapZoom: "17", // 지도 줌 레벨
     mapNaverCoordinates: "14141300,4507203,15,0,0,0,dh", // 네이버 지도 길찾기 URL용 좌표 파라미터 (구 형식)
     transportation: {
