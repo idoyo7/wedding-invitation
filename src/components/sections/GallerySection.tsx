@@ -9,6 +9,11 @@ interface GallerySectionProps {
   bgColor?: 'white' | 'beige';
 }
 
+type GalleryApiResponse = {
+  images?: string[];
+  thumbs?: string[];
+};
+
 // SVG 화살표 아이콘 컴포넌트 추가
 const ArrowLeftIcon = styled(({ className }: { className?: string }) => (
   <svg className={className} width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -43,6 +48,7 @@ const LoadingSpinner = styled.div`
 
 const GallerySection = ({ bgColor = 'white' }: GallerySectionProps) => {
   const [images, setImages] = useState<string[]>([]);
+  const [thumbs, setThumbs] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -69,11 +75,6 @@ const GallerySection = ({ bgColor = 'white' }: GallerySectionProps) => {
     }
   };
   
-  // 디버깅을 위한 로그
-  console.log('Gallery Layout:', galleryLayout);
-  console.log('Gallery Aspect Ratio:', aspectRatio);
-  console.log('Padding Bottom:', getPaddingBottom(aspectRatio));
-  
   useEffect(() => {
     // API에서 갤러리 이미지 목록 가져오기
     const fetchGalleryImages = async () => {
@@ -85,19 +86,27 @@ const GallerySection = ({ bgColor = 'white' }: GallerySectionProps) => {
           throw new Error('갤러리 이미지를 불러오는데 실패했습니다');
         }
         
-        const data = await response.json();
+        const data: GalleryApiResponse = await response.json();
         
         if (data.images && data.images.length > 0) {
           setImages(data.images);
+          // thumbs가 있으면 thumbs 사용, 없으면 full을 썸네일로 사용
+          if (data.thumbs && data.thumbs.length === data.images.length) {
+            setThumbs(data.thumbs);
+          } else {
+            setThumbs(data.images);
+          }
         } else {
           // API에서 이미지를 가져오지 못한 경우 기본 설정 사용
           setImages(weddingConfig.gallery.images);
+          setThumbs(weddingConfig.gallery.images);
         }
       } catch (err) {
         console.error('갤러리 이미지 로드 오류:', err);
         setError('이미지를 불러오는데 문제가 발생했습니다');
         // 에러 발생 시 기본 설정 사용
         setImages(weddingConfig.gallery.images);
+        setThumbs(weddingConfig.gallery.images);
       } finally {
         setIsLoading(false);
       }
@@ -190,10 +199,11 @@ const GallerySection = ({ bgColor = 'white' }: GallerySectionProps) => {
     }
   };
 
-  const handleImageClick = (image: string) => {
-    const imageIndex = images.indexOf(image);
-    setExpandedImage(image);
-    setExpandedImageIndex(imageIndex);
+  const handleImageClick = (index: number) => {
+    const full = images[index];
+    if (!full) return;
+    setExpandedImage(full);
+    setExpandedImageIndex(index);
     setIsExpandedImageLoading(true); // 이미지 로딩 시작
     // 확대 이미지가 표시될 때 스크롤 방지
     document.body.style.overflow = 'hidden';
@@ -310,11 +320,11 @@ const GallerySection = ({ bgColor = 'white' }: GallerySectionProps) => {
       {galleryLayout === 'grid' ? (
         // 그리드 레이아웃
         <GalleryGridContainer>
-          {images.map((image, index) => (
-              <GalleryGridCard key={index} onClick={() => handleImageClick(image)}>
+          {(thumbs.length ? thumbs : images).map((thumb, index) => (
+              <GalleryGridCard key={index} onClick={() => handleImageClick(index)}>
                 <GalleryGridImageWrapper $paddingBottom={getPaddingBottom(aspectRatio)}>
                   <GalleryNextImage 
-                    src={image}
+                    src={thumb}
                     alt={`웨딩 갤러리 이미지 ${index + 1}`}
                     fill
                     sizes="(max-width: 768px) calc(33.333vw - 1rem), calc(33.333vw - 2rem)"
@@ -336,11 +346,11 @@ const GallerySection = ({ bgColor = 'white' }: GallerySectionProps) => {
           </GalleryButton>
           
           <GalleryScrollContainer ref={scrollContainerRef}>
-            {images.map((image, index) => (
-              <GalleryCard key={index} onClick={() => handleImageClick(image)}>
+            {(thumbs.length ? thumbs : images).map((thumb, index) => (
+              <GalleryCard key={index} onClick={() => handleImageClick(index)}>
                 <GalleryImageWrapper $paddingBottom={getPaddingBottom(aspectRatio)}>
                   <GalleryNextImage 
-                    src={image}
+                    src={thumb}
                     alt={`웨딩 갤러리 이미지 ${index + 1}`}
                     fill
                     sizes="(max-width: 768px) 250px, 300px"

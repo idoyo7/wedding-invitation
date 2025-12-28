@@ -5,9 +5,16 @@ const nextConfig = {
     styledComponents: true,
   },
   
-  // 이미지 최적화 설정 (빌드 시점에서 최적화했으므로 런타임 최적화 비활성화)
+  // 이미지 최적화 설정
+  // - 기본값은 런타임 최적화 비활성화(저사양 서버에서 첫 방문 CPU 스파이크 방지)
+  // - 필요하면 NEXT_PUBLIC_ENABLE_NEXT_IMAGE_OPTIMIZATION=true 로 켜서 비교/튜닝 가능
   images: {
-    unoptimized: true, // 빠른 로딩을 위해 런타임 최적화 비활성화
+    unoptimized: process.env.NEXT_PUBLIC_ENABLE_NEXT_IMAGE_OPTIMIZATION !== 'true',
+    formats: ['image/avif', 'image/webp'],
+    // 런타임 최적화를 켰을 때만 의미 있는 설정들(캐시/리사이즈 폭 제한)
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30일
+    deviceSizes: [360, 390, 414, 430, 768, 1024, 1280],
+    imageSizes: [150, 250, 300, 400, 600, 800, 1200, 1600, 1920],
   },
   
   // 성능 최적화 설정
@@ -75,6 +82,16 @@ const nextConfig = {
       // JS/CSS 파일들 (Next.js가 자동으로 해시 추가)
       {
         source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // next/image 최적화 결과 캐싱(동일 url+w+q 조합은 사실상 immutable)
+      {
+        source: '/_next/image',
         headers: [
           {
             key: 'Cache-Control',
