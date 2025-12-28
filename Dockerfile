@@ -6,11 +6,16 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
+# 캐시 최적화: package files를 먼저 복사
 COPY package.json package-lock.json* ./
+
+# 의존성 설치 (캐시 레이어로 최적화)
 RUN \
-  if [ -f package-lock.json ]; then npm ci; \
-  else echo "Lockfile not found." && exit 1; \
+  if [ -f package-lock.json ]; then \
+    # npm ci 캐시 최적화
+    npm ci --only=production --cache /tmp/npm-cache; \
+  else \
+    echo "Lockfile not found." && exit 1; \
   fi
 
 # Rebuild the source code only when needed
