@@ -304,7 +304,7 @@ const GallerySection = ({ bgColor = 'white' }: GallerySectionProps) => {
                   fill
                   sizes="(max-width: 768px) calc(33.333vw - 1rem), calc(33.333vw - 2rem)"
                   quality={85}
-                  priority={index < 6}
+                  priority={index < 8}
                   style={{ objectFit: 'cover' }}
                   draggable={false}
                   onContextMenu={e => e.preventDefault()}
@@ -330,7 +330,7 @@ const GallerySection = ({ bgColor = 'white' }: GallerySectionProps) => {
                     fill
                     sizes="(max-width: 768px) 250px, 300px"
                     quality={85}
-                    priority={index < 3}
+                    priority={index < 5}
                     style={{ objectFit: 'cover' }}
                     draggable={false}
                     onContextMenu={e => e.preventDefault()}
@@ -609,11 +609,34 @@ const GalleryGridContainer = styled.div`
   margin: 2rem auto 0;
   padding: 0 1rem;
   
+  /* 13개 이미지를 위한 특별한 레이아웃 (4-4-4-1 배치) */
+  & > div:nth-child(13) {
+    grid-column: 2 / 3; /* 마지막 이미지를 가운데 열에 배치 */
+    justify-self: center;
+  }
+  
   @media (max-width: 768px) {
-    grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
     padding: 0 0.5rem;
     margin-top: 1.5rem;
+    max-width: 100%;
+    
+    /* 모바일에서도 3열 유지, 마지막 이미지 중앙 배치 */
+    & > div:nth-child(13) {
+      grid-column: 2 / 3;
+      justify-self: center;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    grid-template-columns: repeat(2, 1fr);
+    
+    /* 작은 모바일에서는 마지막 이미지를 두 칸에 걸쳐 배치 */
+    & > div:nth-child(13) {
+      grid-column: 1 / 3;
+      justify-self: center;
+      max-width: 200px;
+    }
   }
 `;
 

@@ -5,11 +5,9 @@ const nextConfig = {
     styledComponents: true,
   },
   
-  // 이미지 최적화 설정
+  // 이미지 최적화 설정 (빌드 시점에서 최적화했으므로 런타임 최적화 비활성화)
   images: {
-    formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    unoptimized: true, // 빠른 로딩을 위해 런타임 최적화 비활성화
   },
   
   // 성능 최적화 설정

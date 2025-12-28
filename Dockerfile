@@ -15,9 +15,37 @@ RUN \
 
 # Rebuild the source code only when needed
 FROM base AS builder
+RUN apk add --no-cache imagemagick
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# 이미지 최적화 (원본 → 갤러리로 2MB 이하 리사이징)
+RUN echo "🖼️ 갤러리 이미지 최적화 중..." && \
+    mkdir -p public/images/gallery && \
+    for i in $(seq 1 13); do \
+        if [ -f "public/images/original/image${i}.jpg" ]; then \
+            echo "처리 중: image${i}.jpg"; \
+            /usr/bin/convert "public/images/original/image${i}.jpg" \
+                -quality 75 \
+                -resize '1600x1600>' \
+                -strip \
+                "public/images/gallery/image${i}.jpg"; \
+            # 2MB 이하인지 확인하고, 아니면 더 압축 \
+            if [ $(stat -c%s "public/images/gallery/image${i}.jpg") -gt 2097152 ]; then \
+                /usr/bin/convert "public/images/original/image${i}.jpg" \
+                    -quality 60 \
+                    -resize '1400x1400>' \
+                    -strip \
+                    "public/images/gallery/image${i}.jpg"; \
+            fi; \
+        fi; \
+    done && \
+    # 갤러리에서 사용하지 않는 이미지 제거 \
+    for i in $(seq 14 20); do \
+        rm -f "public/images/gallery/image${i}.jpg"; \
+    done && \
+    echo "✅ 이미지 최적화 완료"
 
 # Environment variables for build
 ENV NEXT_TELEMETRY_DISABLED=1

@@ -98,13 +98,6 @@ export const weddingConfig = {
       "/images/gallery/image11.jpg",
       "/images/gallery/image12.jpg",
       "/images/gallery/image13.jpg",
-      "/images/gallery/image14.jpg",
-      "/images/gallery/image15.jpg",
-      "/images/gallery/image16.jpg",
-      "/images/gallery/image17.jpg",
-      "/images/gallery/image18.jpg",
-      "/images/gallery/image19.jpg",
-      "/images/gallery/image20.jpg",
     ],
   } as GalleryConfig,
 

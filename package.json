@@ -8,7 +8,8 @@
     "build": "next build",
     "build:fresh": "npm run prebuild && npm run build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "optimize-images": "chmod +x ./scripts/optimize-images.sh && ./scripts/optimize-images.sh"
   },
   "dependencies": {
     "framer-motion": "^12.12.1",
