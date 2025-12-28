@@ -215,7 +215,7 @@ const VenueSection = ({ bgColor = 'white' }: VenueSectionProps) => {
       <VenueInfo>
         <VenueName>{weddingConfig.venue.name}</VenueName>
         <VenueAddress>{formatTextWithLineBreaks(weddingConfig.venue.address)}</VenueAddress>
-        <VenueTel href={`tel:${weddingConfig.venue.tel}`}>{weddingConfig.venue.tel}</VenueTel>
+        {/* 전화번호 안내 제거됨 */}
       </VenueInfo>
       
       {mapError ? (
@@ -255,8 +255,8 @@ const VenueSection = ({ bgColor = 'white' }: VenueSectionProps) => {
         <TransportText>{weddingConfig.venue.parking}</TransportText>
       </ParkingCard>
       
-      {/* 신랑측 배차 안내 - 정보가 있을 때만 표시 */}
-      {weddingConfig.venue.groomShuttle && (
+      {/* 신랑측 배차 안내 - 실제 정보가 있을 때만 표시 */}
+      {weddingConfig.venue.groomShuttle && weddingConfig.venue.groomShuttle.location && weddingConfig.venue.groomShuttle.location.trim() && (
         <ShuttleCard>
           <ShuttleCardHeader onClick={() => toggleShuttle('groom')} $isExpanded={expandedShuttle === 'groom'}>
             <CardTitle>신랑측 배차 안내</CardTitle>
@@ -289,8 +289,8 @@ const VenueSection = ({ bgColor = 'white' }: VenueSectionProps) => {
         </ShuttleCard>
       )}
       
-      {/* 신부측 배차 안내 - 정보가 있을 때만 표시 */}
-      {weddingConfig.venue.brideShuttle && (
+      {/* 신부측 배차 안내 - 실제 정보가 있을 때만 표시 */}
+      {weddingConfig.venue.brideShuttle && weddingConfig.venue.brideShuttle.location && weddingConfig.venue.brideShuttle.location.trim() && (
         <ShuttleCard>
           <ShuttleCardHeader onClick={() => toggleShuttle('bride')} $isExpanded={expandedShuttle === 'bride'}>
             <CardTitle>신부측 배차 안내</CardTitle>
