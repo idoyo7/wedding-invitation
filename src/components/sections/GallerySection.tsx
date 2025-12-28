@@ -54,10 +54,25 @@ const GallerySection = ({ bgColor = 'white' }: GallerySectionProps) => {
   // 갤러리 레이아웃 모드 (scroll 또는 grid)
   const galleryLayout = weddingConfig.gallery.layout || 'scroll';
   
+  // 갤러리 썸네일 비율 설정
+  const aspectRatio = weddingConfig.gallery.aspectRatio || '3:2';
+  
+  // 비율에 따른 padding-bottom 값 계산
+  const getPaddingBottom = (ratio: string) => {
+    switch (ratio) {
+      case '1:1': return '100%';     // 정사각형
+      case '2:3': return '150%';     // 세로형 사진 (2:3)
+      case '3:2': return '66.67%';   // 가로형 사진 (3:2)
+      case '4:3': return '75%';      // 디지털 카메라
+      case '16:9': return '56.25%';  // 와이드스크린
+      default: return '150%';        // 기본값: 2:3 (세로형)
+    }
+  };
+  
   // 디버깅을 위한 로그
   console.log('Gallery Layout:', galleryLayout);
-  console.log('Wedding Config Gallery:', weddingConfig.gallery);
-  console.log('Gallery Layout from config:', weddingConfig.gallery.layout);
+  console.log('Gallery Aspect Ratio:', aspectRatio);
+  console.log('Padding Bottom:', getPaddingBottom(aspectRatio));
   
   useEffect(() => {
     // API에서 갤러리 이미지 목록 가져오기
@@ -296,9 +311,9 @@ const GallerySection = ({ bgColor = 'white' }: GallerySectionProps) => {
         // 그리드 레이아웃
         <GalleryGridContainer>
           {images.map((image, index) => (
-            <GalleryGridCard key={index} onClick={() => handleImageClick(image)}>
-              <GalleryGridImageWrapper>
-                <GalleryNextImage 
+              <GalleryGridCard key={index} onClick={() => handleImageClick(image)}>
+                <GalleryGridImageWrapper $paddingBottom={getPaddingBottom(aspectRatio)}>
+                  <GalleryNextImage
                   src={image}
                   alt={`웨딩 갤러리 이미지 ${index + 1}`}
                   fill
@@ -323,7 +338,7 @@ const GallerySection = ({ bgColor = 'white' }: GallerySectionProps) => {
           <GalleryScrollContainer ref={scrollContainerRef}>
             {images.map((image, index) => (
               <GalleryCard key={index} onClick={() => handleImageClick(image)}>
-                <GalleryImageWrapper>
+                <GalleryImageWrapper $paddingBottom={getPaddingBottom(aspectRatio)}>
                   <GalleryNextImage 
                     src={image}
                     alt={`웨딩 갤러리 이미지 ${index + 1}`}
@@ -463,10 +478,10 @@ const GalleryCard = styled.div`
   }
 `;
 
-const GalleryImageWrapper = styled.div`
+const GalleryImageWrapper = styled.div<{ $paddingBottom: string }>`
   position: relative;
   width: 100%;
-  padding-bottom: 100%; /* 1:1 비율 (정사각형) */
+  padding-bottom: ${props => props.$paddingBottom}; /* 동적 비율 설정 */
 `;
 
 const GalleryNextImage = styled(Image)`
@@ -609,6 +624,9 @@ const GalleryGridContainer = styled.div`
   margin: 2rem auto 0;
   padding: 0 1rem;
   
+  /* 세로형 사진일 때 간격 조정 */
+  row-gap: 1.5rem; /* 세로 간격을 좀 더 늘림 */
+  
   /* 13개 이미지를 위한 특별한 레이아웃 (4-4-4-1 배치) */
   & > div:nth-child(13) {
     grid-column: 2 / 3; /* 마지막 이미지를 가운데 열에 배치 */
@@ -617,6 +635,7 @@ const GalleryGridContainer = styled.div`
   
   @media (max-width: 768px) {
     gap: 0.5rem;
+    row-gap: 1rem; /* 모바일에서 세로 간격 */
     padding: 0 0.5rem;
     margin-top: 1.5rem;
     max-width: 100%;
@@ -630,6 +649,8 @@ const GalleryGridContainer = styled.div`
   
   @media (max-width: 480px) {
     grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    row-gap: 1.25rem; /* 작은 모바일에서 세로 간격 더 늘림 */
     
     /* 작은 모바일에서는 마지막 이미지를 두 칸에 걸쳐 배치 */
     & > div:nth-child(13) {
@@ -654,10 +675,10 @@ const GalleryGridCard = styled.div`
   }
 `;
 
-const GalleryGridImageWrapper = styled.div`
+const GalleryGridImageWrapper = styled.div<{ $paddingBottom: string }>`
   position: relative;
   width: 100%;
-  padding-bottom: 100%; /* 1:1 비율 (정사각형) */
+  padding-bottom: ${props => props.$paddingBottom}; /* 동적 비율 설정 */
 `;
 
 export default GallerySection; 

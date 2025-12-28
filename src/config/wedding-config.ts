@@ -7,6 +7,7 @@ type GalleryPosition = "middle" | "bottom";
 interface GalleryConfig {
   layout: GalleryLayout;
   position: GalleryPosition;
+  aspectRatio: "1:1" | "2:3" | "3:2" | "4:3" | "16:9"; // 썸네일 비율
   images: string[];
 }
 
@@ -25,7 +26,7 @@ export const weddingConfig = {
     title: "Wedding Invitation",
     image: "/images/ha0h-1fsi-bqt3.jpg",
     date: "2026년 2월 28일 토요일 16시",
-    venue: "밀할학교 도산홀"
+    venue: "밀알학교 도산홀"
   },
 
   // 소개글
@@ -84,6 +85,7 @@ export const weddingConfig = {
   gallery: {
     layout: "grid" as GalleryLayout, // "scroll" 또는 "grid" 선택
     position: "bottom" as GalleryPosition, // "middle" (현재 위치) 또는 "bottom" (맨 하단) 선택
+    aspectRatio: "2:3" as const, // "1:1" (정사각형), "2:3" (세로 사진), "3:2" (가로 사진), "4:3" (디지털), "16:9" (와이드)
     images: [
       "/images/gallery/image1.jpg",
       "/images/gallery/image2.jpg",
