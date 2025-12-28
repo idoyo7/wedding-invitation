@@ -3,6 +3,9 @@
 import { weddingConfig } from "../src/config/wedding-config";
 import StyledComponentsRegistry from "../src/lib/registry";
 import { GlobalStyle } from "../src/styles/globalStyles";
+import FallingElements from "../src/components/effects/FallingElements";
+import PageTransition from "../src/components/effects/PageTransition";
+import EffectsController from "../src/components/effects/EffectsController";
 import "./globals.css";
 
 export default function RootLayout({
@@ -27,7 +30,11 @@ export default function RootLayout({
       <body>
         <StyledComponentsRegistry>
           <GlobalStyle />
-        {children}
+          <FallingElements />
+          <EffectsController />
+          <PageTransition>
+            {children}
+          </PageTransition>
         </StyledComponentsRegistry>
       </body>
     </html>

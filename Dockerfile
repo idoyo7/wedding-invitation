@@ -33,7 +33,7 @@ COPY . .
 # 이미지 최적화 (원본 → 갤러리로 2MB 이하 리사이징)
 RUN echo "🖼️ 갤러리 이미지 최적화 중..." && \
     mkdir -p public/images/gallery && \
-    for i in $(seq 1 13); do \
+    for i in $(seq 1 9); do \
         if [ -f "public/images/original/image${i}.jpg" ]; then \
             echo "처리 중: image${i}.jpg"; \
             /usr/bin/convert "public/images/original/image${i}.jpg" \

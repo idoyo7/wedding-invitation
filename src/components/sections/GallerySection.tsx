@@ -313,19 +313,19 @@ const GallerySection = ({ bgColor = 'white' }: GallerySectionProps) => {
           {images.map((image, index) => (
               <GalleryGridCard key={index} onClick={() => handleImageClick(image)}>
                 <GalleryGridImageWrapper $paddingBottom={getPaddingBottom(aspectRatio)}>
-                  <GalleryNextImage
-                  src={image}
-                  alt={`웨딩 갤러리 이미지 ${index + 1}`}
-                  fill
-                  sizes="(max-width: 768px) calc(33.333vw - 1rem), calc(33.333vw - 2rem)"
-                  quality={85}
-                  priority={index < 8}
-                  style={{ objectFit: 'cover' }}
-                  draggable={false}
-                  onContextMenu={e => e.preventDefault()}
-                />
-              </GalleryGridImageWrapper>
-            </GalleryGridCard>
+                  <GalleryNextImage 
+                    src={image}
+                    alt={`웨딩 갤러리 이미지 ${index + 1}`}
+                    fill
+                    sizes="(max-width: 768px) calc(33.333vw - 1rem), calc(33.333vw - 2rem)"
+                    quality={85}
+                    priority={index < 8}
+                    style={{ objectFit: 'cover' }}
+                    draggable={false}
+                    onContextMenu={e => e.preventDefault()}
+                  />
+                </GalleryGridImageWrapper>
+              </GalleryGridCard>
           ))}
         </GalleryGridContainer>
       ) : (

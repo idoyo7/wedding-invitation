@@ -3,6 +3,7 @@
 import { Suspense, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import MainSection from '../src/components/sections/MainSection';
+import ScrollAnimation from '../src/components/effects/ScrollAnimation';
 import { weddingConfig } from '../src/config/wedding-config';
 
 // 동적 임포트로 코드 분할 및 지연 로딩 적용
@@ -68,14 +69,46 @@ export default function Home() {
   return (
     <main>
       <MainSection />
-      <InvitationSection bgColor={sectionColorMap['invitation']} />
-      <DateSection bgColor={sectionColorMap['date']} />
-      <VenueSection bgColor={sectionColorMap['venue']} />
-      {galleryPosition === 'middle' && <GallerySection bgColor={sectionColorMap['gallery-middle']} />}
-      {showRsvp && <RsvpSection bgColor={sectionColorMap['rsvp']} />}
-      {showAccount && <AccountSection bgColor={sectionColorMap['account']} />}
-      {galleryPosition === 'bottom' && <GallerySection bgColor={sectionColorMap['gallery-bottom']} />}
-      <Footer />
+      
+      <ScrollAnimation animation="slideUp" delay={0.1}>
+        <InvitationSection bgColor={sectionColorMap['invitation']} />
+      </ScrollAnimation>
+      
+      <ScrollAnimation animation="fadeIn" delay={0.2}>
+        <DateSection bgColor={sectionColorMap['date']} />
+      </ScrollAnimation>
+      
+      <ScrollAnimation animation="slideUp" delay={0.1}>
+        <VenueSection bgColor={sectionColorMap['venue']} />
+      </ScrollAnimation>
+      
+      {galleryPosition === 'middle' && (
+        <ScrollAnimation animation="scaleIn" delay={0.3}>
+          <GallerySection bgColor={sectionColorMap['gallery-middle']} />
+        </ScrollAnimation>
+      )}
+      
+      {showRsvp && (
+        <ScrollAnimation animation="slideLeft" delay={0.2}>
+          <RsvpSection bgColor={sectionColorMap['rsvp']} />
+        </ScrollAnimation>
+      )}
+      
+      {showAccount && (
+        <ScrollAnimation animation="slideRight" delay={0.2}>
+          <AccountSection bgColor={sectionColorMap['account']} />
+        </ScrollAnimation>
+      )}
+      
+      {galleryPosition === 'bottom' && (
+        <ScrollAnimation animation="scaleIn" delay={0.3}>
+          <GallerySection bgColor={sectionColorMap['gallery-bottom']} />
+        </ScrollAnimation>
+      )}
+      
+      <ScrollAnimation animation="fadeIn" delay={0.1}>
+        <Footer />
+      </ScrollAnimation>
     </main>
   );
 }

@@ -11,6 +11,19 @@ interface GalleryConfig {
   images: string[];
 }
 
+// 이펙트 설정 인터페이스
+interface EffectsConfig {
+  enabled: boolean; // 전체 이펙트 활성화/비활성화
+  pageTransition: boolean; // 페이지 로딩 애니메이션
+  scrollAnimation: boolean; // 스크롤 애니메이션  
+  imageHover: boolean; // 이미지 호버 효과
+  textAnimation: boolean; // 텍스트 애니메이션
+  backgroundParticles: boolean; // 배경 파티클
+  fallingElements: "none" | "hearts" | "petals" | "snow" | "sparkles" | "minimal" | "geometric"; // 떨어지는 요소들
+  galleryAnimation: boolean; // 갤러리 애니메이션
+  buttonAnimation: boolean; // 버튼 애니메이션
+}
+
 export const weddingConfig = {
   // 메타 정보
   meta: {
@@ -96,16 +109,12 @@ export const weddingConfig = {
       "/images/gallery/image7.jpg",
       "/images/gallery/image8.jpg",
       "/images/gallery/image9.jpg",
-      "/images/gallery/image10.jpg",
-      "/images/gallery/image11.jpg",
-      "/images/gallery/image12.jpg",
-      "/images/gallery/image13.jpg",
     ],
   } as GalleryConfig,
 
   // 초대의 말씀
   invitation: {
-    message: "한 줄기 별빛이 되어 만난 인연\n평생을 함께 걸어가려 합니다.\n\n소중한 분들의 축복 속에\n저희 두 사람이 첫 걸음을 내딛습니다.\n\n귀한 시간 내어 함께해 주신다면\n그 어떤 축복보다 값진 선물이 될 것입니다.",
+    message: "초대합니다.\n서로 다르지만 닮은 두 사람이\n사람들의 축복 아래\n결혼식을 하게 되었습니다.\n\n하나님 안에 새로운 인생을 시작하는\n자리에 오셔서 축복해주세요.\n\n귀한 발걸음으로 오시고, 후의를 베풀어 주신 분들의 마음을 깊이\n간직하겠습니다.\n\n항상 가정에 행복과 건강이\n함께 하시길 기원합니다.",
     groom: {
       name: "김예준",
       label: "아들",
@@ -163,8 +172,21 @@ export const weddingConfig = {
 
   // 슬랙 알림 설정
   slack: {
-    webhookUrl: process.env.NEXT_PUBLIC_SLACK_WEBHOOK_URL || "",
+    webhookUrl: (typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_SLACK_WEBHOOK_URL : '') || "",
     channel: "#wedding-response",
     compactMessage: true, // 슬랙 메시지를 간결하게 표시
   },
+
+  // 이펙트 설정
+  effects: {
+    enabled: false, // 전체 이펙트 활성화
+    pageTransition: false, // 페이지 로딩 애니메이션 (부드러운 fade-in)
+    scrollAnimation: false, // 스크롤 시 섹션 등장 애니메이션
+    imageHover: false, // 이미지 호버 시 확대/회전 효과 (썸네일 로딩 문제로 비활성화)
+    textAnimation: false, // 텍스트 타이핑 애니메이션 (기본 비활성화)
+    backgroundParticles: false, // 배경 파티클 효과 (성능상 기본 비활성화)
+    fallingElements: "hearts", // 떨어지는 효과 ("none", "hearts", "snow", "sparkles", "minimal", "geometric")
+    galleryAnimation: false, // 갤러리 이미지 애니메이션 (썸네일 로딩 문제로 비활성화)
+    buttonAnimation: false, // 버튼 호버 애니메이션
+  } as EffectsConfig,
 }; 
