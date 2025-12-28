@@ -1,5 +1,5 @@
-# Multi-stage build for Next.js production
-FROM node:18-alpine AS base
+# Multi-stage build for Next.js production - Node.js 24 TEST VERSION
+FROM node:24-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
