@@ -1,11 +1,6 @@
-# robots.txt - 검색엔진 크롤링 허용 (SEO)
 User-agent: *
-Allow: /
-
-# Next.js/내부 경로는 인덱싱 제외 (선택)
 Disallow: /api/
 Disallow: /_next/
 
-# 사이트맵 (같은 사이트 두 도메인)
 Sitemap: https://we.makgol.com/sitemap.xml
 Sitemap: https://us.makgol.com/sitemap.xml
