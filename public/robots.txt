@@ -1,13 +1,11 @@
-# robots.txt
+# robots.txt - 검색엔진 크롤링 허용 (SEO)
 User-agent: *
-Disallow: /
+Allow: /
 
-# 특정 봇에 대한 추가 제한
-User-agent: Googlebot
-Disallow: /
+# Next.js/내부 경로는 인덱싱 제외 (선택)
+Disallow: /api/
+Disallow: /_next/
 
-User-agent: Bingbot
-Disallow: /
-
-User-agent: Yeti
-Disallow: / 
+# 사이트맵 (같은 사이트 두 도메인)
+Sitemap: https://we.makgol.com/sitemap.xml
+Sitemap: https://us.makgol.com/sitemap.xml
