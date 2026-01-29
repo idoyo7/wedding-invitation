@@ -1,6 +1,4 @@
 User-agent: *
-Disallow: /api/
-Disallow: /_next/
 
 Sitemap: https://we.makgol.com/sitemap.xml
 Sitemap: https://us.makgol.com/sitemap.xml
